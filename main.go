@@ -14,15 +14,14 @@ var (
 	proxy2  string
 	pattern string
 	route   chan string
-	wg      sync.WaitGroup
 )
 
 func Listen() error {
 	lis, err := net.Listen("tcp", liface)
+	defer lis.Close()
 	if err != nil {
 		return err
 	}
-	defer lis.Close()
 	for {
 		conn, err := lis.Accept()
 		if err != nil {
@@ -50,6 +49,7 @@ func forward(in net.Conn, iproxy string) {
 		return
 	}
 
+	var wg sync.WaitGroup
 	wg.Add(1)
 	go func() {
 		io.Copy(out, in)
